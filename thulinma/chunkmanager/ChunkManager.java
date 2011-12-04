@@ -49,6 +49,7 @@ public class ChunkManager extends JavaPlugin implements Runnable {
 
   public void run() {
     Set<ChunkCoordIntPair> waitset = null;
+    Set<ChunkCoordIntPair> removeset = new HashSet<ChunkCoordIntPair>();
     Player[] players = getServer().getOnlinePlayers();
     for (Player P : players){
       EntityPlayer E = ((CraftPlayer)P).getHandle();
@@ -62,22 +63,26 @@ public class ChunkManager extends JavaPlugin implements Runnable {
       //send at most one chunk this player needs
       if (!waitset.isEmpty()) {
         ChunkCoordIntPair willsend = null;
-        int x = (int) E.locX >> 4;
-        int z = (int) E.locZ >> 4;
-        if (E.motX != 0){x += ((E.motX * 5) / 16);}
-        if (E.motZ != 0){z += ((E.motZ * 5) / 16);}
+        int x = (int) (E.locX + E.motX * 10) >> 4;
+        int z = (int) (E.locZ + E.motZ * 10) >> 4;
         //find the best chunk to send
+        int distA = 99;
+        int distB = 0;
         for (ChunkCoordIntPair Pair : waitset){
           if (willsend == null){willsend = Pair;}
-          if (Math.max(Math.abs(willsend.x - x), Math.abs(willsend.z - z)) > Math.max(Math.abs(Pair.x - x), Math.abs(Pair.z - z))){
-            willsend = Pair;
+          distB = Math.max(Math.abs(Pair.x - x), Math.abs(Pair.z - z));
+          if (distA > distB){
+            willsend = Pair; distA = distB;
+          }else{
+            if (distB > 10){removeset.add(Pair);}
           }
         }
-        //remove from waiting list
+        //remove from waiting list if too far
+        if (removeset.size() > 0){for (ChunkCoordIntPair Pair : removeset){waitset.remove(Pair);}}
+        //remove current from waiting list
         waitset.remove(willsend);
         //only send if not too far away
-        int distance = Math.max(Math.abs(willsend.x - x), Math.abs(willsend.z - z));
-        if (distance <= 10){
+        if (distA <= 10){
           WorldServer worldserver = E.b.getWorldServer(E.dimension);
           E.netServerHandler.sendPacket(new Packet51MapChunk(willsend.x * 16, 0, willsend.z * 16, 16, worldserver.height, 16, worldserver));
           @SuppressWarnings("rawtypes")
