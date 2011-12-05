@@ -13,6 +13,8 @@ import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.Packet51MapChunk;
 import net.minecraft.server.TileEntity;
 import net.minecraft.server.WorldServer;
+
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -22,7 +24,8 @@ public class ChunkManager extends JavaPlugin implements Runnable {
   Logger log = Logger.getLogger("Minecraft");
   private int taskID = 0;
   Method M = null;
-  HashMap<String, Set<ChunkCoordIntPair>> waitinglist = new HashMap<String, Set<ChunkCoordIntPair>>();
+  HashMap<Player, Set<ChunkCoordIntPair>> waitinglist = new HashMap<Player, Set<ChunkCoordIntPair>>();
+  HashMap<Player, World> worldlist = new HashMap<Player, World>();
 
   public void Info(String m){log.info("[ChunkManager] "+m);}
 
@@ -52,9 +55,14 @@ public class ChunkManager extends JavaPlugin implements Runnable {
     Set<ChunkCoordIntPair> removeset = new HashSet<ChunkCoordIntPair>();
     Player[] players = getServer().getOnlinePlayers();
     for (Player P : players){
+      //clear the waiting list if the player changed worlds
+      if (P.getWorld() != worldlist.get(P)){
+        worldlist.put(P, P.getWorld());
+        waitinglist.get(P).clear();
+      }
       EntityPlayer E = ((CraftPlayer)P).getHandle();
-      if (waitinglist.get(P.getName()) == null){waitinglist.put(P.getName(), new HashSet<ChunkCoordIntPair>());}
-      waitset = waitinglist.get(P.getName());
+      if (waitinglist.get(P) == null){waitinglist.put(P, new HashSet<ChunkCoordIntPair>());}
+      waitset = waitinglist.get(P);
       //if this player has chunks waiting, remove them and add to our waiting list
       if (E.chunkCoordIntPairQueue.size() > 0){
         for (Object Pair : E.chunkCoordIntPairQueue){waitset.add((ChunkCoordIntPair)Pair);}

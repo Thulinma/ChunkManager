@@ -1,5 +1,5 @@
 name: ChunkManager
 main: thulinma.chunkmanager.ChunkManager
-version: 0.3
+version: 0.4
 description: Improves the vanilla CraftBukkit chunk sending algorithms, as well as providing more control over chunk sending.
 authors: [Thulinma]
