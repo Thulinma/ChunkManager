@@ -65,14 +65,15 @@ public class ChunkManager extends JavaPlugin implements Runnable {
     Set<ChunkCoordIntPair> removeset = new HashSet<ChunkCoordIntPair>();
     Player[] players = getServer().getOnlinePlayers();
     for (Player P : players){
+      //get or create waiting list
+      if (waitinglist.get(P) == null){waitinglist.put(P, new HashSet<ChunkCoordIntPair>());}
+      waitset = waitinglist.get(P);
       //clear the waiting list if the player changed worlds
       if (P.getWorld() != worldlist.get(P)){
         worldlist.put(P, P.getWorld());
-        waitinglist.get(P).clear();
+        waitset.clear();
       }
       EntityPlayer E = ((CraftPlayer)P).getHandle();
-      if (waitinglist.get(P) == null){waitinglist.put(P, new HashSet<ChunkCoordIntPair>());}
-      waitset = waitinglist.get(P);
       //if this player has chunks waiting, remove them and add to our waiting list
       if (E.chunkCoordIntPairQueue.size() > 0){
         waitset.addAll(E.chunkCoordIntPairQueue);
