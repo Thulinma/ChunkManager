@@ -29,10 +29,19 @@ public class ChunkManager extends JavaPlugin implements Runnable {
 
   public void Info(String m){log.info("[ChunkManager] "+m);}
 
+  @SuppressWarnings("unchecked")
   @Override
   public void onDisable() {
     PluginDescriptionFile pdfFile = getDescription();
     if (taskID != 0){getServer().getScheduler().cancelTask(taskID);}
+    //restore chunkCoordIntPairQueue contents for all online players
+    Player[] players = getServer().getOnlinePlayers();
+    for (Player P : players){
+      if (!waitinglist.get(P).isEmpty()){
+        EntityPlayer E = ((CraftPlayer)P).getHandle();
+        E.chunkCoordIntPairQueue.addAll(waitinglist.get(P));
+      }
+    }
     Info(pdfFile.getVersion()+" disabled.");
   }
 
@@ -50,6 +59,7 @@ public class ChunkManager extends JavaPlugin implements Runnable {
     Info(pdfFile.getVersion()+" enabled.");
   }
 
+  @SuppressWarnings("unchecked")
   public void run() {
     Set<ChunkCoordIntPair> waitset = null;
     Set<ChunkCoordIntPair> removeset = new HashSet<ChunkCoordIntPair>();
@@ -65,7 +75,7 @@ public class ChunkManager extends JavaPlugin implements Runnable {
       waitset = waitinglist.get(P);
       //if this player has chunks waiting, remove them and add to our waiting list
       if (E.chunkCoordIntPairQueue.size() > 0){
-        for (Object Pair : E.chunkCoordIntPairQueue){waitset.add((ChunkCoordIntPair)Pair);}
+        waitset.addAll(E.chunkCoordIntPairQueue);
         E.chunkCoordIntPairQueue.clear();
       }
       //send at most one chunk this player needs
