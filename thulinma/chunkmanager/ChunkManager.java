@@ -37,7 +37,7 @@ public class ChunkManager extends JavaPlugin implements Runnable {
     //restore chunkCoordIntPairQueue contents for all online players
     Player[] players = getServer().getOnlinePlayers();
     for (Player P : players){
-      if (!waitinglist.get(P).isEmpty()){
+      if (waitinglist.get(P) != null && !waitinglist.get(P).isEmpty()){
         EntityPlayer E = ((CraftPlayer)P).getHandle();
         E.chunkCoordIntPairQueue.addAll(waitinglist.get(P));
       }
@@ -93,7 +93,7 @@ public class ChunkManager extends JavaPlugin implements Runnable {
           if (distA > distB){
             willsend = Pair; distA = distB;
           }else{
-            if (distB > 10){removeset.add(Pair);}
+            if (distB > 25){removeset.add(Pair);}
           }
         }
         //remove from waiting list if too far
