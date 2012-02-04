@@ -102,18 +102,18 @@ public class ChunkManager extends JavaPlugin implements Runnable {
         waitset.remove(willsend);
         //only send if not too far away
         if (distA <= 10){
-          WorldServer worldserver = E.b.getWorldServer(E.dimension);
-          E.netServerHandler.sendPacket(new Packet51MapChunk(willsend.x * 16, 0, willsend.z * 16, 16, worldserver.height, 16, worldserver));
-          @SuppressWarnings("rawtypes")
-          List list = worldserver.getTileEntities(willsend.x * 16, 0, willsend.z * 16, willsend.x * 16 + 16, worldserver.height, willsend.z * 16 + 16);
-          for (int j = 0; j < list.size(); ++j) {
-            try{
+          try{
+            WorldServer worldserver = E.server.getWorldServer(E.dimension);
+            E.netServerHandler.sendPacket(new Packet51MapChunk(willsend.x * 16, 0, willsend.z * 16, 16, worldserver.height, 16, worldserver));
+            @SuppressWarnings("rawtypes")
+            List list = worldserver.getTileEntities(willsend.x * 16, 0, willsend.z * 16, willsend.x * 16 + 16, worldserver.height, willsend.z * 16 + 16);
+            for (int j = 0; j < list.size(); ++j) {
               M.invoke(E, (TileEntity)list.get(j));
-            } catch (Exception e){
-              Info("It looks like this CB server is not compatible - sorry :-(");
-              onDisable();
-              return;
             }
+          } catch (Exception e){
+            Info("It looks like this CB server is not compatible - sorry :-(");
+            onDisable();
+            return;
           }
         }
       }
