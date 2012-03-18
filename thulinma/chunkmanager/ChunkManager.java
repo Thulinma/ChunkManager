@@ -104,9 +104,9 @@ public class ChunkManager extends JavaPlugin implements Runnable {
         if (distA <= 10){
           try{
             WorldServer worldserver = E.server.getWorldServer(E.dimension);
-            E.netServerHandler.sendPacket(new Packet51MapChunk(willsend.x * 16, 0, willsend.z * 16, 16, worldserver.height, 16, worldserver));
+            E.netServerHandler.sendPacket(new Packet51MapChunk(worldserver.getChunkAt(willsend.x, willsend.z), true, 0));
             @SuppressWarnings("rawtypes")
-            List list = worldserver.getTileEntities(willsend.x * 16, 0, willsend.z * 16, willsend.x * 16 + 16, worldserver.height, willsend.z * 16 + 16);
+            List list = worldserver.getTileEntities(willsend.x * 16, 0, willsend.z * 16, willsend.x * 16 + 16, 256, willsend.z * 16 + 16);
             for (int j = 0; j < list.size(); ++j) {
               M.invoke(E, (TileEntity)list.get(j));
             }
